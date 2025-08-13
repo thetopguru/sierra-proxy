@@ -1,0 +1,6 @@
+{
+  "name": "sierra-proxy",
+  "private": true,
+  "type": "commonjs",
+  "engines": { "node": ">=18" }
+}
