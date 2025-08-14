@@ -27,11 +27,12 @@ async function fetchHtmlViaScrapingBee(url) {
   const qs = new URLSearchParams({
     api_key: key,
     url,
-    render_js: "true",          // выполнить JS
-    premium_proxy: "true",      // включить stealth/residential
-    country_code: "US",         // гео — США
-    block_resources: "false",   // не резать ресурсы, пусть страница загрузится «как есть»
-    timeout: "30000"            // мс
+    render_js: "true",
+    premium_proxy: "true",
+    country_code: "US",
+    block_resources: "false",
+    wait_browser: "5000", // подождать 5 сек, чтобы всё прогрузилось
+    timeout: "60000"
   });
 
   const res = await fetch(`${api}?${qs.toString()}`, {
@@ -46,7 +47,15 @@ async function fetchHtmlViaScrapingBee(url) {
     const txt = await res.text().catch(() => "");
     throw new Error(`ScrapingBee HTTP ${res.status}: ${txt.slice(0, 300)}`);
   }
-  return res.text();
+
+  const html = await res.text();
+
+  // 🔹 Логируем первые 3000 символов в Render Logs
+  console.log("===== HTML START =====");
+  console.log(html.slice(0, 3000));
+  console.log("===== HTML END =====");
+
+  return html;
 }
 
 // Универсальный парсер window.__STATE__
