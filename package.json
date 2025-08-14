@@ -1,6 +1,13 @@
 {
   "name": "sierra-proxy",
-  "private": true,
-  "type": "commonjs",
-  "engines": { "node": ">=18" }
+  "version": "1.0.0",
+  "description": "Proxy for Sierra.com product monitoring",
+  "main": "sierra.js",
+  "scripts": {
+    "start": "node sierra.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  }
 }
