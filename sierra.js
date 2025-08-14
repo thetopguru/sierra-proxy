@@ -32,7 +32,7 @@ async function fetchHtmlViaScrapingBee(url) {
     premium_proxy: "true",   // Резидентские/stealth-прокси
     country_code: "US",      // США
     block_resources: "false",
-    wait_browser: "5000",    // Ждём 5 сек для полной загрузки
+    wait: "5000",    // Ждём 5 сек для полной загрузки
     timeout: "60000"         // Таймаут 60 сек
   });
 
