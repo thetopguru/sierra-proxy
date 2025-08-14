@@ -1,10 +1,11 @@
 const express = require("express");
+const fs = require("fs");
 const fetch = (...args) => import("node-fetch").then(({ default: f }) => f(...args));
 const app = express();
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
 
-// Кэш в памяти (внутри процесса)
+// Кэш в памяти
 const cache = new Map();
 const CACHE_TTL = 120 * 1000; // 120 сек
 
@@ -17,7 +18,7 @@ function okUrl(u) {
   }
 }
 
-// Функция запроса HTML через ScrapingBee с отладочным выводом
+// Запрос HTML через ScrapingBee
 async function fetchHtmlViaScrapingBee(url) {
   const key = process.env.SCRAPINGBEE_KEY;
   if (!key) {
@@ -28,12 +29,12 @@ async function fetchHtmlViaScrapingBee(url) {
   const qs = new URLSearchParams({
     api_key: key,
     url,
-    render_js: "true",       // Выполнить JS
-    premium_proxy: "true",   // Резидентские/stealth-прокси
-    country_code: "US",      // США
+    render_js: "true",
+    premium_proxy: "true",
+    country_code: "US",
     block_resources: "false",
-    wait: "5000",    // Ждём 5 сек для полной загрузки
-    timeout: "60000"         // Таймаут 60 сек
+    wait: "5000",         // ждём 5 сек
+    timeout: "60000"      // таймаут 60 сек
   });
 
   const res = await fetch(`${api}?${qs.toString()}`, {
@@ -51,15 +52,23 @@ async function fetchHtmlViaScrapingBee(url) {
 
   const html = await res.text();
 
-  // 🔹 Логируем первые 3000 символов HTML в Render Logs
+  // 🔹 Логируем первые 30 000 символов
   console.log("===== HTML START =====");
-  console.log(html.slice(0, 3000));
+  console.log(html.slice(0, 30000));
   console.log("===== HTML END =====");
+
+  // 🔹 Сохраняем весь HTML в файл
+  try {
+    fs.writeFileSync("/tmp/page.html", html);
+    console.log("Full HTML saved to /tmp/page.html");
+  } catch (err) {
+    console.error("Failed to save HTML file:", err.message);
+  }
 
   return html;
 }
 
-// Парсер состояния
+// Парсер window.__STATE__
 function extractState(html) {
   let m = html.match(/window\.__STATE__\s*=\s*(\{[\s\S]*?\});\s*<\/script>/i);
   if (!m) {
@@ -80,7 +89,7 @@ function extractState(html) {
   }
 }
 
-// Приведение инвентаря к удобному формату
+// Сбор данных из state
 function reduceInventory(state) {
   const items =
     state?.product?.inventory?.items ||
@@ -126,4 +135,4 @@ app.get("/api/sierra", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Sierra proxy (ScrapingBee) running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Sierra proxy (ScrapingBee debug) running on port ${PORT}`));
